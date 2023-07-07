@@ -1,0 +1,308 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int tam = 10;
+int i;
+int contadorOperaciones = 0;
+
+int menu();
+void clientesCargados(int arrayCuenta[], int arrayEstado[], int arrayPass[], char arrayNombre[][1000], float arraySaldo[]);
+int busquedaArreglo(int arreglo[], int elementoABuscar);
+void deposito(float arraySaldo[], int auxCuenta);
+void extraccion(float arraySaldo[], int auxCuenta);
+void consultarSaldo(float arraySaldo[], int auxCuenta);
+void mostrarInformacion(float arraySaldo[], int contadorOperaciones, int auxCuenta);
+
+int main()
+{
+    int pass[tam], cuenta[tam], estado[tam], nroCuenta, clave, auxCuenta, auxPass, contadorIntentos, salidaCajero;
+    char nombre[tam][1000];
+    float saldo[tam];
+    int opcionMenu;
+    contadorIntentos = 1;
+    salidaCajero = 10;
+    clave = 0, auxCuenta = 0, auxPass = 0;
+
+    clientesCargados(cuenta, estado, pass, nombre, saldo);
+    printf("BIENVENIDO AL CAJERO AUTOMATICO\n");
+    system("pause");
+    system("cls");
+
+    do
+    {
+
+        do
+        {
+            printf("Ingrese su numero de cuenta\n");
+            scanf("%d", &nroCuenta);
+            auxCuenta = busquedaArreglo(cuenta, nroCuenta);
+            if (auxCuenta == -1)
+            {
+                printf("!!!ERROR!!!\n INGRESE SU NRO DE CUENTA\n");
+            }
+
+        } while (auxCuenta == -1);
+
+        if (auxCuenta != -1)
+        {
+            printf("NRO DE CUENTA ACEPTADO!\n");
+            do
+            {
+
+                printf("Ingrese su clave de acceso\n");
+                scanf("%d", &clave);
+                auxPass = busquedaArreglo(pass, clave);
+                if (auxPass == -1)
+                {
+                    printf("Error en pass\n Ha usado %d intentos\n", contadorIntentos);
+                    contadorIntentos++;
+                }
+
+            } while (auxPass == -1 && contadorIntentos <= 3);
+
+            /*1- AGREGAR CONTADOR DE MOVIMIENTOS EN SESION INICIADA, LEER CONSIGNA
+            2-CUANDO EL CONTADOR DE MOVIMIENTOS LLEGA A 3, HAY QUE BLOQUEAR LA CUENTA Y EIENE QUE PASAR DE ESTADO ACTIVO (0)A ESTADO BLOQUEADO(1)
+            3-  */
+            if (auxPass != -1)
+            {
+                printf("HOLA! %s\n", nombre[auxCuenta]);
+                do
+                {
+                    opcionMenu = menu();
+
+                    switch (opcionMenu)
+                    {
+
+                    case 1:
+                        deposito(saldo, auxCuenta);
+                        contadorOperaciones++;
+                        break;
+                    case 2:
+                        extraccion(saldo, auxCuenta);
+                        contadorOperaciones++;
+                        break;
+                    case 3:
+                        consultarSaldo(saldo, auxCuenta);
+                        contadorOperaciones++;
+
+                        break;
+                    case 4:
+                        mostrarInformacion(saldo, contadorOperaciones, auxCuenta);
+                        break;
+                    default:
+                        break;
+                    }
+
+                } while (opcionMenu != 5);
+            }
+        }
+
+    } while (salidaCajero == 10);
+};
+
+int menu()
+{
+    int opcion;
+    do
+    {
+        printf("1- Deposito\n");
+        printf("2- Extraccion\n");
+        printf("3- Consultar saldo\n");
+        printf("4- Mostrar la cantidad de operaciones realizadas y el saldo actual\n");
+        printf("5-SALIR\n");
+        scanf("%d", &opcion);
+
+    } while (opcion < 1 || opcion > 5);
+
+    return opcion;
+}
+void clientesCargados(int arrayCuenta[], int arrayEstado[], int arrayPass[], char arrayNombre[][1000], float arraySaldo[])
+{
+    arrayCuenta[0] = 5222;
+    arrayCuenta[1] = 5223;
+    arrayCuenta[2] = 5224;
+    arrayCuenta[3] = 5225;
+    arrayCuenta[4] = 5226;
+    arrayCuenta[5] = 5227;
+    arrayCuenta[6] = 5228;
+    arrayCuenta[7] = 5229;
+    arrayCuenta[8] = 5220;
+    arrayCuenta[9] = 5221;
+
+    arrayEstado[0] = 0;
+    arrayEstado[1] = 0;
+    arrayEstado[2] = 0;
+    arrayEstado[3] = 0;
+    arrayEstado[4] = 0;
+    arrayEstado[5] = 0;
+    arrayEstado[6] = 0;
+    arrayEstado[7] = 0;
+    arrayEstado[8] = 0;
+    arrayEstado[9] = 0;
+
+    arrayPass[0] = 1234;
+    arrayPass[1] = 1234;
+    arrayPass[2] = 1234;
+    arrayPass[3] = 1234;
+    arrayPass[4] = 1234;
+    arrayPass[5] = 1234;
+    arrayPass[6] = 1234;
+    arrayPass[7] = 1234;
+    arrayPass[8] = 1234;
+    arrayPass[9] = 1234;
+
+    strcpy(arrayNombre[0], "Alvarado,Federico");
+    strcpy(arrayNombre[1], "Coronel,Agustin");
+    strcpy(arrayNombre[2], "Cordoba,Agustin");
+    strcpy(arrayNombre[3], "Garcia,Felipe");
+    strcpy(arrayNombre[4], "Almeida,Casiano");
+    strcpy(arrayNombre[5], "Biasin,Gino");
+    strcpy(arrayNombre[6], "Gerlero,Agustin");
+    strcpy(arrayNombre[7], "Biselli,Ricardo");
+    strcpy(arrayNombre[8], "Villalba,Nicolas");
+    strcpy(arrayNombre[9], "Becares,Mauro");
+
+    arraySaldo[0] = 150000;
+    arraySaldo[1] = 150000;
+    arraySaldo[2] = 150000;
+    arraySaldo[3] = 150000;
+    arraySaldo[4] = 150000;
+    arraySaldo[5] = 150000;
+    arraySaldo[6] = 150000;
+    arraySaldo[7] = 150000;
+    arraySaldo[8] = 150000;
+    arraySaldo[9] = 150000;
+}
+
+int busquedaArreglo(int arreglo[], int elementoABuscar)
+{
+    int i, elementoEncontrado;
+    i = 0;
+    elementoEncontrado = 0;
+
+    while (i <= tam && elementoEncontrado == 0)
+    {
+        if (elementoABuscar == arreglo[i])
+        {
+            elementoEncontrado = 1;
+        }
+        else
+        {
+            i = i + 1;
+        }
+    }
+    if (elementoEncontrado == 1)
+    {
+        return i;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+void deposito(float arraySaldo[], int auxCuenta)
+{
+    float importe;
+    int aux;
+    system("cls");
+    printf("            _\n");
+    printf("           | DEPOSITOS |\n");
+    printf("           ------------\n\n");
+    do
+    {
+        printf("Ingrese el importe a depositar: \n");
+        scanf("%f", &importe);
+    } while (importe < 0);
+    printf("Confirma el deposito de $%.2f ", importe, "\n");
+    printf("\n1- Confirmar\n2- Rechazar\n");
+    do
+    {
+        scanf("%d", &aux);
+        if (aux < 1 || aux > 2)
+        {
+            printf("Opcion incorrecta, intente nuevamente\n");
+        }
+
+    } while (aux < 1 || aux > 2);
+    if (aux == 1)
+    {
+        system("cls");
+        printf("\t\tDeposito realizado con exito\n");
+        printf("-------Saldo anterior: %.2f\n\n", arraySaldo[i]);
+        arraySaldo[i] = arraySaldo[i] + importe;
+        printf("-------Saldo actualizado: %.2f\n", arraySaldo[i]);
+        system("pause\n");
+    }
+    else
+    {
+        system("cls");
+        printf("Deposito cancelado\n");
+        system("pause\n");
+    }
+}
+
+void extraccion(float arraySaldo[], int auxCuenta)
+{
+    float importe;
+    int aux;
+    system("cls");
+    printf("            __\n");
+    printf("           | EXTRACCIONES |\n");
+    printf("           ---------------\n\n");
+    do
+    {
+        printf("Ingrese el importe a extraer: \n");
+        scanf("%f", &importe);
+    } while (importe < 0);
+    if (importe < arraySaldo[i])
+    {
+        printf("Confirma la extraccion de $ %.2f ", importe);
+        printf("\n1- Confirmar\n2- Rechazar\n");
+        do
+        {
+            scanf("%d", &aux);
+            if (aux < 1 || aux > 2)
+            {
+                printf("Opcion incorrecta, intente nuevamente\n");
+            }
+        } while (aux < 1 || aux > 2);
+        if (aux == 1)
+        {
+            system("cls");
+            printf("\t\tExtraccion realizado con exito\n");
+            printf("-------Saldo anterior: %.2f\n\n", arraySaldo[i]);
+            arraySaldo[i] = arraySaldo[i] - importe;
+            printf("-------Saldo actualizado: %.2f\n", arraySaldo[i]);
+            system("pause\n");
+        }
+        else
+        {
+            system("cls");
+            printf("Deposito cancelado\n");
+            system("pause\n");
+        }
+    }
+    else
+    {
+        system("cls");
+        printf("ATENCION- Saldo insuficiente para la extraccion solicitada\n");
+        system("pause\n");
+    }
+}
+
+void consultarSaldo(float arraySaldo[], int auxCuenta)
+{
+    system("cls");
+    printf("            __________\n");
+    printf("           | CONSULTAR SALDO |\n");
+    printf("           ------------------\n\n");
+    printf("Saldo actual: $%.2f\n", arraySaldo[auxCuenta]);
+    system("pause\n");
+}
+void mostrarInformacion(float arraySaldo[], int contadorOperaciones, int auxCuenta)
+{
+    printf("Cantidad de operaciones realizadas: %d\n", contadorOperaciones);
+    printf("Saldo actual: %.2f\n", arraySaldo[auxCuenta]);
+}
