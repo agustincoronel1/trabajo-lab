@@ -4,15 +4,13 @@
 
 int tam = 10;
 int i;
-int contadorOperaciones = 0;
 
 int menu();
 void clientesCargados(int arrayCuenta[], int arrayEstado[], int arrayPass[], char arrayNombre[][1000], float arraySaldo[]);
-int busquedaArreglo(int arreglo[], int elementoABuscar);
+int busquedaArreglo(int arreglo[], int elementoABuscar, int arrayEstado[]);
+void bloquearCuenta(int auxCuenta, int arrayEstado[]);
 void deposito(float arraySaldo[], int auxCuenta);
 void extraccion(float arraySaldo[], int auxCuenta);
-void consultarSaldo(float arraySaldo[], int auxCuenta);
-void mostrarInformacion(float arraySaldo[], int contadorOperaciones, int auxCuenta);
 
 int main()
 {
@@ -36,69 +34,71 @@ int main()
         {
             printf("Ingrese su numero de cuenta\n");
             scanf("%d", &nroCuenta);
-            auxCuenta = busquedaArreglo(cuenta, nroCuenta);
+            auxCuenta = busquedaArreglo(cuenta, nroCuenta, estado);
             if (auxCuenta == -1)
             {
                 printf("!!!ERROR!!!\n INGRESE SU NRO DE CUENTA\n");
+            } else if(auxCuenta == -2){
+                printf("SU CUENTA A SIDO BLOQUEADA POR EXCESO DE INTENTOS, LO SENTIMOS\n");
             }
 
-        } while (auxCuenta == -1);
+        } while (auxCuenta <= -1);
 
-        if (auxCuenta != -1)
+        if (auxCuenta >= 0)
         {
             printf("NRO DE CUENTA ACEPTADO!\n");
-            do
-            {
-
-                printf("Ingrese su clave de acceso\n");
-                scanf("%d", &clave);
-                auxPass = busquedaArreglo(pass, clave);
-                if (auxPass == -1)
-                {
-                    printf("Error en pass\n Ha usado %d intentos\n", contadorIntentos);
-                    contadorIntentos++;
-                }
-
-            } while (auxPass == -1 && contadorIntentos <= 3);
-
-            /*1- AGREGAR CONTADOR DE MOVIMIENTOS EN SESION INICIADA, LEER CONSIGNA
-            2-CUANDO EL CONTADOR DE MOVIMIENTOS LLEGA A 3, HAY QUE BLOQUEAR LA CUENTA Y EIENE QUE PASAR DE ESTADO ACTIVO (0)A ESTADO BLOQUEADO(1)
-            3-  */
-            if (auxPass != -1)
-            {
-                printf("HOLA! %s\n", nombre[auxCuenta]);
                 do
                 {
-                    opcionMenu = menu();
 
-                    switch (opcionMenu)
+                    printf("Ingrese su clave de acceso\n");
+                    scanf("%d", &clave);
+                    auxPass = busquedaArreglo(pass, clave, estado);
+                    if (auxPass == -1)
                     {
-
-                    case 1:
-                        deposito(saldo, auxCuenta);
-                        contadorOperaciones++;
-                        break;
-                    case 2:
-                        extraccion(saldo, auxCuenta);
-                        contadorOperaciones++;
-                        break;
-                    case 3:
-                        consultarSaldo(saldo, auxCuenta);
-                        contadorOperaciones++;
-
-                        break;
-                    case 4:
-                        mostrarInformacion(saldo, contadorOperaciones, auxCuenta);
-                        break;
-                    default:
-                        break;
+                        printf("Error en la contraseña\n Ha usado %d intentos\n", contadorIntentos);
+                        contadorIntentos++;
+                            if(contadorIntentos == 4){
+                            bloquearCuenta(auxCuenta,estado);
+                            printf("SU CUENTA A SIDO BLOQUEADA POR EXCESO DE INTENTOS, LO SENTIMOS\n");
+                        }
                     }
+                    
 
-                } while (opcionMenu != 5);
+                } while (auxPass == -1 && contadorIntentos <= 3);
+
+                /*1- AGREGAR CONTADOR DE MOVIMIENTOS EN SESION INICIADA, LEER CONSIGNA
+                2-CUANDO EL CONTADOR DE MOVIMIENTOS LLEGA A 3, HAY QUE BLOQUEAR LA CUENTA Y EIENE QUE PASAR DE ESTADO ACTIVO (0)A ESTADO BLOQUEADO(1)
+                3-  */
+                if (auxPass >= 0)
+                {
+                    printf("HOLA! %s\n", nombre[auxCuenta]);
+                    do
+                    {
+                        opcionMenu = menu();
+
+                        switch (opcionMenu)
+                        {
+
+                        case 1:
+                            deposito(saldo, auxCuenta);
+                            break;
+                        case 2:
+                            extraccion(saldo, auxCuenta);
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        default:
+                            break;
+                        }
+
+                    } while (opcionMenu != 5);
+                }
             }
-        }
+        // }
 
-    } while (salidaCajero == 10);
+    } while (salidaCajero == 10 || auxCuenta == -2);
 };
 
 int menu()
@@ -175,19 +175,23 @@ void clientesCargados(int arrayCuenta[], int arrayEstado[], int arrayPass[], cha
     arraySaldo[9] = 150000;
 }
 
-int busquedaArreglo(int arreglo[], int elementoABuscar)
+int busquedaArreglo(int arreglo[], int elementoABuscar, int arrayEstado[])
 {
     int i, elementoEncontrado;
     i = 0;
-    elementoEncontrado = 0;
+    elementoEncontrado = -1;
 
-    while (i <= tam && elementoEncontrado == 0)
+    while (i <= tam && elementoEncontrado == -1)
     {
         if (elementoABuscar == arreglo[i])
         {
-            elementoEncontrado = 1;
-        }
-        else
+            if(arrayEstado[i] == 1){
+                elementoEncontrado = -2;
+            }else{
+                elementoEncontrado = 1;
+            }
+            
+        }else
         {
             i = i + 1;
         }
@@ -196,10 +200,14 @@ int busquedaArreglo(int arreglo[], int elementoABuscar)
     {
         return i;
     }
-    else
+    else 
     {
-        return -1;
+        return elementoEncontrado;
     }
+}
+
+void bloquearCuenta(int auxCuenta, int arrayEstado[]){
+    arrayEstado[auxCuenta] = 1;
 }
 
 void deposito(float arraySaldo[], int auxCuenta)
@@ -290,19 +298,4 @@ void extraccion(float arraySaldo[], int auxCuenta)
         printf("ATENCION- Saldo insuficiente para la extraccion solicitada\n");
         system("pause\n");
     }
-}
-
-void consultarSaldo(float arraySaldo[], int auxCuenta)
-{
-    system("cls");
-    printf("            __________\n");
-    printf("           | CONSULTAR SALDO |\n");
-    printf("           ------------------\n\n");
-    printf("Saldo actual: $%.2f\n", arraySaldo[auxCuenta]);
-    system("pause\n");
-}
-void mostrarInformacion(float arraySaldo[], int contadorOperaciones, int auxCuenta)
-{
-    printf("Cantidad de operaciones realizadas: %d\n", contadorOperaciones);
-    printf("Saldo actual: %.2f\n", arraySaldo[auxCuenta]);
 }
